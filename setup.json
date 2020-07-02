@@ -14,17 +14,8 @@
     ],
     "version": "0.1.0a0",
     "entry_points": {
-        "aiida.data": [
-            "nims_scheduler = aiida_nims_scheduler.data:DiffParameters"
-        ],
-        "aiida.calculations": [
-            "nims_scheduler = aiida_nims_scheduler.calculations:DiffCalculation"
-        ],
-        "aiida.parsers": [
-            "nims_scheduler = aiida_nims_scheduler.parsers:DiffParser"
-        ],
-        "aiida.cmdline.data": [
-            "nims_scheduler = aiida_nims_scheduler.cli:data_cli"
+        "aiida.schedulers": [
+            "pbs_nims = aiida_nims_scheduler.schedulers.pbs_nims:PbsNimsScheduler"
         ]
     },
     "include_package_data": true,
@@ -32,8 +23,6 @@
     "reentry_register": true,
     "install_requires": [
         "aiida-core>=1.2.1,<2.0.0",
-        "six",
-        "voluptuous"
     ],
     "extras_require": {
         "testing": [
