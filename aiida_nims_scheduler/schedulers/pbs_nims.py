@@ -24,6 +24,30 @@ class PbsNimsScheduler(PbsBaseClass):
     """
 
     def _get_submit_script_header(self, job_tmpl):
+        """
+
+        Parameters in job_resource are defined at NodeNumberJobResource in
+        aiida-core as follows:
+
+            _default_fields = (
+                'num_machines',
+                'num_mpiprocs_per_machine',
+                'num_cores_per_machine',
+                'num_cores_per_mpiproc',
+            )
+
+        With these parameters, the header part is given by
+
+        #QSUB2 core {num_machines * num_cores_per_machine}
+        #QSUB2 mpi {num_machines * num_mpiprocs_per_machine}
+        #QSUB2 smp {num_cores_per_mpiproc}
+
+        Be sure 'tot_num_mpiprocs' can be used to specify
+        'num_mpiprocs_per_machine' indirectly as
+            num_mpiprocs_per_machine = tot_num_mpiprocs // num_machines
+
+        """
+
         import re
         import string
 
@@ -35,8 +59,9 @@ class PbsNimsScheduler(PbsBaseClass):
 
         resource_lines = self._get_resource_lines(
             num_machines=job_tmpl.job_resource.num_machines,
+            num_mpiprocs_per_machine=job_tmpl.job_resource.num_mpiprocs_per_machine,
             num_cores_per_machine=job_tmpl.job_resource.num_cores_per_machine,
-            tot_num_mpiprocs=job_tmpl.job_resource.tot_num_mpiprocs,
+            num_cores_per_mpiproc=job_tmpl.job_resource.num_cores_per_mpiproc,
             max_wallclock_seconds=job_tmpl.max_wallclock_seconds
         )
         lines += resource_lines
@@ -85,37 +110,32 @@ class PbsNimsScheduler(PbsBaseClass):
 
     def _get_resource_lines(self,
                             num_machines,
+                            num_mpiprocs_per_machine,
                             num_cores_per_machine,
-                            tot_num_mpiprocs,
+                            num_cores_per_mpiproc,
                             max_wallclock_seconds):
         return_lines = []
 
-        if (tot_num_mpiprocs is not None and
-            tot_num_mpiprocs > 0):
-            return_lines.append('#QSUB2 mpi {}'.format(tot_num_mpiprocs))
+        # #QSUB2 core
+        if num_cores_per_machine is None:
+            qsub2_core = num_machines * num_mpiprocs_per_machine
+        elif num_cores_per_machine < 1:
+            raise ValueError("num_cores_per_machine is not defined.")
         else:
-            raise ValueError(
-                'tot_num_mpiprocs must be greater than 0! '
-                "It is instead '{}'".format(tot_num_mpiprocs))
+            qsub2_core = num_machines * num_cores_per_machine
+        return_lines.append('#QSUB2 core {}'.format(qsub2_core))
 
-        if num_cores_per_machine:
-            if num_cores_per_machine > 0:
-                if num_machines:
-                    if num_machines > 0:
-                        tot_num_cores = num_cores_per_machine * num_machines
-                    else:
-                        raise ValueError(
-                            'num_machines must be greater than 0! '
-                            "It is instead '{}'".format(num_machines))
-                else:
-                    tot_num_cores = num_cores_per_machine
+        # #QSUB2 mpi
+        qsub2_mpi = num_machines * num_mpiprocs_per_machine
+        return_lines.append("#QSUB2 mpi {}".format(qsub2_mpi))
+
+        # #QSUB2 smp
+        if num_cores_per_mpiproc is not None:
+            if num_cores_per_mpiproc > 0:
+                qsub2_smp = num_cores_per_mpiproc
+                return_lines.append('#QSUB2 smp {}'.format(qsub2_smp))
             else:
-                raise ValueError(
-                    'num_cores_per_machine must be greater than 0! '
-                    "It is instead '{}'".format(num_cores_per_machine))
-            return_lines.append("#QSUB2 core {}".format(tot_num_cores))
-        else:
-            raise ValueError('num_cores_per_machine has to be set.')
+                raise ValueError("num_cores_per_mpiproc is wrongly set.")
 
         if max_wallclock_seconds is not None:
             try:
