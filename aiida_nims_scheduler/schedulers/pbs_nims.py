@@ -174,4 +174,11 @@ class PbsNimsScheduler(PbsBaseClass):
         if stderr.strip():
             _LOGGER.warning('in _parse_submit_output there was some text in stderr: {}'.format(stderr))
 
-        return stdout.strip().splitlines()[-1].split('.')[0]
+        # return stdout.strip().splitlines()[-1].split('.')[0]
+        return stdout.strip().splitlines()[-1]
+
+    def _parse_joblist_output(self, retval, stdout, stderr):
+        # _LOGGER.warning("--- PbsNimsScheduler ---")
+        # _LOGGER.warning(stdout)
+        # _LOGGER.warning("--- PbsNimsScheduler ---")
+        return super(PbsNimsScheduler, self)._parse_joblist_output(retval, stdout, stderr)
