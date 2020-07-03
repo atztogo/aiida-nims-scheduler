@@ -42,6 +42,9 @@ class PbsNimsScheduler(PbsBaseClass):
         #QSUB2 mpi {num_machines * num_mpiprocs_per_machine}
         #QSUB2 smp {num_cores_per_mpiproc}
 
+        When 'num_cores_per_machine' is unspecified, 'num_mpiprocs_per_machine'
+        is used instead of 'num_cores_per_machine'.
+
         Be sure 'tot_num_mpiprocs' can be used to specify
         'num_mpiprocs_per_machine' indirectly as
             num_mpiprocs_per_machine = tot_num_mpiprocs // num_machines
