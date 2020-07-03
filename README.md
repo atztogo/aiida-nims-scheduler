@@ -10,11 +10,16 @@ AiiDA plugin of NIMS supercomputer scheduler
 ```shell
 git clone https://github.com/atztogo/aiida-nims-scheduler .
 cd aiida-nims-scheduler
+pip install -e .
+verdi daemon restart
+verdi plugin list aiida.schedulers  # should now show pbs_nims scheduler
+```
+
+For development,
+```
 pip install -e .[pre-commit,testing]  # install extra dependencies
 pre-commit install  # install pre-commit hooks
 pytest -v  # discover and run all tests
-verdi daemon restart
-verdi plugin list aiida.schedulers  # should now show pbs_nims scheduler
 ```
 
 ## Usage
