@@ -15,7 +15,7 @@
     "version": "0.9.0",
     "entry_points": {
         "aiida.schedulers": [
-            "pbs_nims = aiida_nims_scheduler.schedulers.pbs_nims:PbsNimsScheduler"
+            "nims_scheduler = aiida_nims_scheduler.schedulers.pbs_nims:PbsNimsScheduler"
         ]
     },
     "include_package_data": true,

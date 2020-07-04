@@ -12,7 +12,7 @@ git clone https://github.com/atztogo/aiida-nims-scheduler .
 cd aiida-nims-scheduler
 pip install -e .
 verdi daemon restart
-verdi plugin list aiida.schedulers  # should now show pbs_nims scheduler
+verdi plugin list aiida.schedulers  # should now show nims_scheduler
 ```
 
 For development,
