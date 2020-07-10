@@ -139,6 +139,9 @@ class PbsNimsScheduler(PbsBaseClass):
                 return_lines.append('#QSUB2 smp {}'.format(qsub2_smp))
             else:
                 raise ValueError("num_cores_per_mpiproc is wrongly set.")
+        else:
+            return_lines.append('#QSUB2 smp 1')
+
 
         if max_wallclock_seconds is not None:
             try:
@@ -182,3 +185,47 @@ class PbsNimsScheduler(PbsBaseClass):
         # _LOGGER.warning(stdout)
         # _LOGGER.warning("--- PbsNimsScheduler ---")
         return super(PbsNimsScheduler, self)._parse_joblist_output(retval, stdout, stderr)
+
+    def _get_run_line(self, codes_info, codes_run_mode):
+        """Return a string with the line to execute a specific code with specific arguments.
+
+        :parameter codes_info: a list of `aiida.common.datastructures.CodeInfo` objects. Each contains the information
+            needed to run the code. I.e. `cmdline_params`, `stdin_name`, `stdout_name`, `stderr_name`, `join_files`. See
+            the documentation of `JobTemplate` and `CodeInfo`.
+        :parameter codes_run_mode: instance of `aiida.common.datastructures.CodeRunMode` contains the information on how
+            to launch the multiple codes.
+        :return: string with format: [executable] [args] {[ < stdin ]} {[ < stdout ]} {[2>&1 | 2> stderr]}
+        """
+        from aiida.common.datastructures import CodeRunMode
+
+        list_of_runlines = []
+
+        for code_info in codes_info:
+            command_to_exec_list = []
+            for arg in code_info.cmdline_params:
+                command_to_exec_list.append(arg)
+            command_to_exec = ' '.join(command_to_exec_list)
+
+            stdin_str = '< {}'.format(code_info.stdin_name) if code_info.stdin_name else ''
+            stdout_str = '> {}'.format(code_info.stdout_name) if code_info.stdout_name else ''
+
+            join_files = code_info.join_files
+            if join_files:
+                stderr_str = '2>&1'
+            else:
+                stderr_str = '2> {}'.format(code_info.stderr_name) if code_info.stderr_name else ''
+
+            output_string = ('{} {} {} {}'.format(command_to_exec, stdin_str, stdout_str, stderr_str))
+
+            list_of_runlines.append(output_string)
+
+        self.logger.debug('_get_run_line output: {}'.format(list_of_runlines))
+
+        if codes_run_mode == CodeRunMode.PARALLEL:
+            list_of_runlines.append('wait\n')
+            return ' &\n\n'.join(list_of_runlines)
+
+        if codes_run_mode == CodeRunMode.SERIAL:
+            return '\n\n'.join(list_of_runlines)
+
+        raise NotImplementedError('Unrecognized code run mode')
