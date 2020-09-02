@@ -139,6 +139,8 @@ class PbsNimsScheduler(PbsBaseClass):
                 return_lines.append('#QSUB2 smp {}'.format(qsub2_smp))
             else:
                 raise ValueError("num_cores_per_mpiproc is wrongly set.")
+        else:
+            return_lines.append('#QSUB2 smp 1')
 
         if max_wallclock_seconds is not None:
             try:
