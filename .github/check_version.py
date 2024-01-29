@@ -3,6 +3,7 @@
 Check version number in setup.json and aiida_nims_scheduler/__init__.py and make sure
 they match.
 """
+
 import json
 import os
 import sys
