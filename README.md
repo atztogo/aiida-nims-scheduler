@@ -3,7 +3,9 @@
 
 # aiida-nims-scheduler
 
-AiiDA plugin of NIMS supercomputer scheduler
+AiiDA plugin of old NIMS supercomputer scheduler
+
+**This plugin is no-longer necessary and so is not maintained.**
 
 ## Installation
 
